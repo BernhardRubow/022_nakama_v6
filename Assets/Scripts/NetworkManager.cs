@@ -9,6 +9,7 @@ public class NetworkManager : MonoBehaviour
     // +++ events +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     public ObjectEventDelegate OnMatchCreated = delegate {};
     public ObjectEventDelegate OnDebugMessage = delegate {};
+    public ObjectEventDelegate OnNetworkGameStarted = delegate{};
 
 
 
@@ -89,6 +90,7 @@ public class NetworkManager : MonoBehaviour
                 _presences.Add(p);
         }        
         List_Players(_presences);  
+        CheckPlayerLimitReached();
     }
 
     private async void OnUiCreateMatch(object eventArgs){
@@ -102,7 +104,8 @@ public class NetworkManager : MonoBehaviour
         string matchId = eventArgs.ToString();
         _match = await _socket.JoinMatchAsync(matchId);
         foreach(var p in _match.Presences) _presences.Add(p);
-        List_Players(_presences);
+        List_Players(_presences);         
+        CheckPlayerLimitReached();
     }
 
 
@@ -164,10 +167,17 @@ public class NetworkManager : MonoBehaviour
 
 
     // +++ functions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    private void CheckPlayerLimitReached(){
+        if(_presences.Count == 2){
+            this.OnNetworkGameStarted(null);
+        }
+    }
     private void List_Players(List<IUserPresence> presences){
         this.OnDebugMessage("Match Joined, listing players:");        
         foreach(var p in presences){
             this.OnDebugMessage(string.Format("--- {0}", p.UserId));
         }
     }
+
+
 }
