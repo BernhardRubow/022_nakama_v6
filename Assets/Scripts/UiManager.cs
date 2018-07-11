@@ -10,6 +10,7 @@ public class UiManager : MonoBehaviour
   // +++ events exposed +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   public ObjectEventDelegate OnCreateMatch = delegate { };
   public ObjectEventDelegate OnJoinMatch = delegate { };
+  public ObjectEventDelegate OnStartGame = delegate {};
 
 
 
@@ -22,6 +23,7 @@ public class UiManager : MonoBehaviour
   [SerializeField] private Button _startGameButton;
 	[SerializeField] private Button _createMatchButton;
 	[SerializeField] private Button _joinMatchButton;
+  [SerializeField] private GameObject _createJoinMatchUI;
   private string _textToAppend;
 
 
@@ -33,7 +35,6 @@ public class UiManager : MonoBehaviour
   {
     // initialize
     _debugText.text = "";
-    _startGameButton.gameObject.SetActive(false);
 
     // subscribe to events
     _networkManager.OnMatchCreated += OnMatchCreated;
@@ -41,7 +42,6 @@ public class UiManager : MonoBehaviour
     _networkManager.OnNetworkGameStarted += OnNetworkMatchInitiated;
 
   }
-
 
   void Update()
   {
@@ -52,19 +52,19 @@ public class UiManager : MonoBehaviour
     }
   }
 
-
-
   void Reset()
   {
     _networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManager>();
   }
+
+
 
   // +++ event handler ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   // +++ network manager events +++
   private void OnNetworkMatchInitiated(object eventArgs)
   {
-    _startGameButton.gameObject.SetActive(true);
+    _createJoinMatchUI.SetActive(false);
   }
   void OnMatchCreated(object eventArgs)
   {
@@ -77,18 +77,22 @@ public class UiManager : MonoBehaviour
   }
 
   // +++ UI Events +++
-  public void OnStartGameClicked()
-  {
-
-  }
   public void OnCreateMatchClicked()
   {
 		this._createMatchButton.gameObject.SetActive(false);
+    this._joinMatchButton.gameObject.SetActive(false);
+    this._matchIdToJoin.gameObject.SetActive(false);
     this.OnCreateMatch(null);
   }
 
   public void OnJoinMatchClicked()
   {
+    if(_matchIdToJoin.text == string.Empty) return;
+
+    this._joinMatchButton.gameObject.SetActive(false);
+    this._createMatchButton.gameObject.SetActive(false);
+    this._matchIdDisplay.gameObject.SetActive(false);
+    this._matchIdToJoin.gameObject.SetActive(false);
     this.OnJoinMatch(_matchIdToJoin.text);
   }
 
