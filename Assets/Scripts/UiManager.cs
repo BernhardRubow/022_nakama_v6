@@ -68,18 +68,25 @@ public class UiManager : MonoBehaviour
   private void OnNetworkMatchInitiated(object eventArgs)
   {
     // warning this action is called from other thread
-    mainThreadActions.Add(() => { _createJoinMatchUI.SetActive(false); });
+    mainThreadActions.Add(() => { 
+      _createJoinMatchUI.SetActive(false); 
+    });
   }
   void OnMatchCreated(object eventArgs)
   {
     // warning this action is called from other thread
-    mainThreadActions.Add(() => _matchIdDisplay.gameObject.SetActive(true));
-    _matchIdDisplay.text = eventArgs.ToString();
+    mainThreadActions.Add(() => {
+      _matchIdDisplay.gameObject.SetActive(true);
+      _matchIdDisplay.text = eventArgs.ToString();
+    });
   }
 
   void OnDebugMessageReceived(object eventArgs)
   {
-    mainThreadActions.Add(() => _debugText.text += "\n" + eventArgs.ToString());    
+    // warning this action is called from other thread
+    mainThreadActions.Add(() => { 
+      _debugText.text += "\n" + eventArgs.ToString();
+    });    
   }
 
   // +++ UI Events +++
