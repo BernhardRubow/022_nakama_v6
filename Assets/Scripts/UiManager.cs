@@ -10,7 +10,7 @@ public class UiManager : MonoBehaviour
   // +++ events exposed +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   public ObjectEventDelegate OnCreateMatch = delegate { };
   public ObjectEventDelegate OnJoinMatch = delegate { };
-  public ObjectEventDelegate OnStartGame = delegate {};
+  public ObjectEventDelegate OnStartGame = delegate { };
 
 
 
@@ -26,7 +26,7 @@ public class UiManager : MonoBehaviour
   [SerializeField] private GameObject _createJoinMatchUI;
   private string _textToAppend;
 
-
+  List<System.Action> mainThreadActions = new List<System.Action>();
 
 
 
@@ -45,10 +45,13 @@ public class UiManager : MonoBehaviour
 
   void Update()
   {
-    if (!string.IsNullOrEmpty(_textToAppend))
-    {
-      _debugText.text += _textToAppend;
-      _textToAppend = string.Empty;
+    if(mainThreadActions.Count > 0){
+      for(int i = 0, n = mainThreadActions.Count; i < n; i++){
+        if(mainThreadActions[i] != null) {
+          mainThreadActions[i]();
+        };
+      }
+      mainThreadActions.Clear();
     }
   }
 
@@ -64,16 +67,19 @@ public class UiManager : MonoBehaviour
   // +++ network manager events +++
   private void OnNetworkMatchInitiated(object eventArgs)
   {
-    _createJoinMatchUI.SetActive(false);
+    // warning this action is called from other thread
+    mainThreadActions.Add(() => { _createJoinMatchUI.SetActive(false); });
   }
   void OnMatchCreated(object eventArgs)
   {
+    // warning this action is called from other thread
+    mainThreadActions.Add(() => _matchIdDisplay.gameObject.SetActive(true));
     _matchIdDisplay.text = eventArgs.ToString();
   }
 
   void OnDebugMessageReceived(object eventArgs)
   {
-    _textToAppend += "\n" + eventArgs.ToString();
+    mainThreadActions.Add(() => _debugText.text += "\n" + eventArgs.ToString());    
   }
 
   // +++ UI Events +++
@@ -95,7 +101,4 @@ public class UiManager : MonoBehaviour
     this._matchIdToJoin.gameObject.SetActive(false);
     this.OnJoinMatch(_matchIdToJoin.text);
   }
-
-
-
 }

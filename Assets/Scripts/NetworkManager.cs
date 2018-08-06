@@ -16,6 +16,8 @@ public class NetworkManager : MonoBehaviour
 
 
   // +++ fields +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  [SerializeField] private string _host;
+  [SerializeField] private int _port = 7350;
   Nakama.Client _client;
   ISession _session;
   IApiAccount _account;
@@ -38,7 +40,7 @@ public class NetworkManager : MonoBehaviour
     _ui.OnStartGame += OnStartGame;
 
     // start nakama client
-    _client = new Client("defaultkey", "aws.mkwindweb2.de", 7350, false);
+    _client = new Client("defaultkey", _host, _port, false);
 
     // const string email = "hello@example.com";
     // const string password = "somesupersecretpassword";
